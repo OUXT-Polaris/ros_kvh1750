@@ -3,16 +3,14 @@
  * \author: Jason Ziglar <jpz@vt.edu>
  * \date: 02/19/2015
  */
-#include "kvh1750/imu.h"
-
 #include <gtest/gtest.h>
 
 #include <boost/algorithm/string.hpp>
-
 #include <chrono>
+#include <map>
 #include <memory>
 
-#include <map>
+#include "kvh1750/imu.h"
 
 //Make C++11x support not required
 #if __cplusplus >= 201103L
@@ -37,7 +35,7 @@ struct DataCase
   std::vector<size_t> reads;
 };
 
-typedef FUNCTION<std::string(const std::string& name, const std::string& args)> CommandProcessor;
+typedef FUNCTION<std::string(const std::string & name, const std::string & args)> CommandProcessor;
 
 /**
  * Stub class for unit testing data
@@ -48,23 +46,27 @@ public:
   IOStub();
   virtual ~IOStub();
 
-  bool set_test_case(const std::string& name);
+  bool set_test_case(const std::string & name);
   std::vector<std::string> cases() const;
-protected:
-  virtual bool read(uint8_t* buff, size_t max_bytes, size_t& bytes, bool tov);
-  virtual bool write(const uint8_t* buff, size_t bytes);
-  virtual void flush_buffers();
-  virtual void time(uint64_t& secs, uint64_t& nsecs);
-  virtual void reset_time();
-protected:
-  void add_case(const std::string& name, uint8_t* start, uint8_t* end,
-    const std::vector<size_t>& reads);
-  bool offset_read(const std::vector<uint8_t>& data, size_t& offset, uint8_t* buff,
-    size_t max_bytes, size_t& bytes_read);
 
-  std::string processTemperature(const std::string& name, const std::string& args);
-  std::string processRotFmt(const std::string& name, const std::string& args);
-  std::string processConfig(const std::string& name, const std::string& args);
+protected:
+  virtual bool read(uint8_t * buff, size_t max_bytes, size_t & bytes, bool tov);
+  virtual bool write(const uint8_t * buff, size_t bytes);
+  virtual void flush_buffers();
+  virtual void time(uint64_t & secs, uint64_t & nsecs);
+  virtual void reset_time();
+
+protected:
+  void add_case(
+    const std::string & name, uint8_t * start, uint8_t * end, const std::vector<size_t> & reads);
+  bool offset_read(
+    const std::vector<uint8_t> & data, size_t & offset, uint8_t * buff, size_t max_bytes,
+    size_t & bytes_read);
+
+  std::string processTemperature(const std::string & name, const std::string & args);
+  std::string processRotFmt(const std::string & name, const std::string & args);
+  std::string processConfig(const std::string & name, const std::string & args);
+
 protected:
   typedef std::chrono::high_resolution_clock::duration duration_t;
   std::map<std::string, DataCase> _cases;
@@ -85,8 +87,8 @@ protected:
 /**
  * Default constructor
  */
-IOStub::IOStub() :
-  _cases(),
+IOStub::IOStub()
+: _cases(),
   _response_data(),
   _input(),
   _processors(),
@@ -100,19 +102,17 @@ IOStub::IOStub() :
   _is_c(true)
 {
   //accelerometers only
-  std::array<uint8_t, sizeof(kvh::RawMessage)> valid =
-    MAKE_BYTE_ARRAY(0xFE, 0x81, 0xFF, 0x55, 0x3B, 0x04, 0x1F, 0x78, 0xB9, 0xB9,
-                    0x66, 0x13, 0xBA, 0x23, 0x4B, 0x38, 0xBB, 0x7C, 0x04, 0x10,
-                    0xB8, 0xDE, 0xF4, 0x80, 0x3F, 0x7F, 0x4B, 0x7B, 0x70, 0x1F,
-                    0x00, 0x1D, 0xF1, 0x2F, 0xB6, 0xEE
-                   );
+  std::array<uint8_t, sizeof(kvh::RawMessage)> valid = MAKE_BYTE_ARRAY(
+    0xFE, 0x81, 0xFF, 0x55, 0x3B, 0x04, 0x1F, 0x78, 0xB9, 0xB9, 0x66, 0x13, 0xBA, 0x23, 0x4B, 0x38,
+    0xBB, 0x7C, 0x04, 0x10, 0xB8, 0xDE, 0xF4, 0x80, 0x3F, 0x7F, 0x4B, 0x7B, 0x70, 0x1F, 0x00, 0x1D,
+    0xF1, 0x2F, 0xB6, 0xEE);
   std::vector<size_t> reads(1, sizeof(kvh::RawMessage));
   add_case("early", valid.begin(), valid.end(), reads);
   //fully valid
-  valid = MAKE_BYTE_ARRAY(0xFE, 0x81, 0xFF, 0x55, 0xB3, 0xD0, 0xBB, 0xE7, 0x32,
-                          0x19, 0x3E, 0xF4, 0x30, 0xAC, 0x19, 0xA5, 0xBA, 0x8F, 0x78, 0xD6, 0x3A, 0x29,
-                          0x05, 0x94, 0x3F, 0x7E, 0xCB, 0xD4, 0x77, 0x68, 0x00, 0x1D, 0xAD, 0xC5, 0xF6,
-                          0x51);
+  valid = MAKE_BYTE_ARRAY(
+    0xFE, 0x81, 0xFF, 0x55, 0xB3, 0xD0, 0xBB, 0xE7, 0x32, 0x19, 0x3E, 0xF4, 0x30, 0xAC, 0x19, 0xA5,
+    0xBA, 0x8F, 0x78, 0xD6, 0x3A, 0x29, 0x05, 0x94, 0x3F, 0x7E, 0xCB, 0xD4, 0x77, 0x68, 0x00, 0x1D,
+    0xAD, 0xC5, 0xF6, 0x51);
   add_case("basic", valid.begin(), valid.end(), reads);
 
   std::vector<size_t> multi_read;
@@ -120,10 +120,10 @@ IOStub::IOStub() :
   multi_read.push_back(valid.size() - 5);
   add_case("simple_split", valid.begin(), valid.end(), multi_read);
   //bad checksum
-  valid = MAKE_BYTE_ARRAY(0xFE, 0x81, 0xFF, 0x55, 0xB4, 0x6B, 0x86, 0xC6, 0xB4,
-                          0x4F, 0x5B, 0x83, 0xB4, 0x10, 0x6D, 0x09, 0xBB, 0x71, 0x3C, 0xB7, 0xBB,
-                          0xAB, 0xD9, 0x14, 0x3F, 0x7E, 0x31, 0x9A, 0x77, 0x69, 0x00, 0x1D, 0x95,
-                          0xBB, 0xDB, 0x4F);
+  valid = MAKE_BYTE_ARRAY(
+    0xFE, 0x81, 0xFF, 0x55, 0xB4, 0x6B, 0x86, 0xC6, 0xB4, 0x4F, 0x5B, 0x83, 0xB4, 0x10, 0x6D, 0x09,
+    0xBB, 0x71, 0x3C, 0xB7, 0xBB, 0xAB, 0xD9, 0x14, 0x3F, 0x7E, 0x31, 0x9A, 0x77, 0x69, 0x00, 0x1D,
+    0x95, 0xBB, 0xDB, 0x4F);
   add_case("bad_crc", valid.begin(), valid.end(), reads);
 
   using namespace std::placeholders;
@@ -132,15 +132,12 @@ IOStub::IOStub() :
   _processors["ROTFMT"] = BIND(&IOStub::processRotFmt, this, _1, _2);
 }
 
-IOStub::~IOStub()
-{
-}
+IOStub::~IOStub() {}
 
-bool IOStub::set_test_case(const std::string& name)
+bool IOStub::set_test_case(const std::string & name)
 {
   bool valid = (_cases.find(name) != _cases.end());
-  if(valid)
-  {
+  if (valid) {
     _case = name;
     _counter = 0;
     _offset = 0;
@@ -154,8 +151,7 @@ std::vector<std::string> IOStub::cases() const
 {
   std::vector<std::string> case_list;
 
-  for(const auto& ii : _cases)
-  {
+  for (const auto & ii : _cases) {
     case_list.push_back(ii.first);
   }
 
@@ -165,29 +161,24 @@ std::vector<std::string> IOStub::cases() const
 /**
  * Simplified read which draws from canned data.
  */
-bool IOStub::read(uint8_t* buff, size_t max_bytes, size_t& bytes, bool tov)
+bool IOStub::read(uint8_t * buff, size_t max_bytes, size_t & bytes, bool tov)
 {
-  if(!_response_data.empty())
-  {
-    bool status = offset_read(_response_data, _response_offset, buff, max_bytes,
-      bytes);
-    if(_response_offset == _response_data.size())
-    {
+  if (!_response_data.empty()) {
+    bool status = offset_read(_response_data, _response_offset, buff, max_bytes, bytes);
+    if (_response_offset == _response_data.size()) {
       _response_data.clear();
       _response_offset = 0;
     }
 
     return status;
   }
-  const auto& match = _cases.find(_case);
-  if(match == _cases.end())
-  {
+  const auto & match = _cases.find(_case);
+  if (match == _cases.end()) {
     return false;
   }
-  const DataCase& data = match->second;
+  const DataCase & data = match->second;
   //bounds check the read attempts
-  if(_counter >= data.reads.size())
-  {
+  if (_counter >= data.reads.size()) {
     return false;
   }
 
@@ -197,10 +188,9 @@ bool IOStub::read(uint8_t* buff, size_t max_bytes, size_t& bytes, bool tov)
   return result;
 }
 
-bool IOStub::write(const uint8_t* buff, size_t bytes)
+bool IOStub::write(const uint8_t * buff, size_t bytes)
 {
-  if(bytes == 0)
-  {
+  if (bytes == 0) {
     return true;
   }
 
@@ -210,8 +200,7 @@ bool IOStub::write(const uint8_t* buff, size_t bytes)
   auto start = _input.begin() + last_index;
   auto match = std::find(start, _input.end(), '\n');
 
-  if(match == _input.end())
-  {
+  if (match == _input.end()) {
     return true;
   }
 
@@ -219,26 +208,22 @@ bool IOStub::write(const uint8_t* buff, size_t bytes)
   _input.clear();
 
   bool is_query = false;
-  switch(data[0])
-  {
+  switch (data[0]) {
     case '?':
       is_query = true;
-    break;
+      break;
     case '=':
       is_query = false;
-    break;
+      break;
     default:
       return false;
   }
   std::string cmd;
   std::string args;
 
-  if(is_query)
-  {
+  if (is_query) {
     cmd = data.substr(1);
-  }
-  else
-  {
+  } else {
     size_t end = data.find(',');
     cmd = data.substr(1, end - 1);
     //apparent fencepost error here is to remove the newline
@@ -248,26 +233,22 @@ bool IOStub::write(const uint8_t* buff, size_t bytes)
   boost::to_upper(cmd);
   boost::to_upper(args);
 
-  const auto& processor = _processors.find(cmd);
+  const auto & processor = _processors.find(cmd);
 
   std::string resp = "";
-  if(processor != _processors.end())
-  {
+  if (processor != _processors.end()) {
     resp = processor->second(processor->first, args);
   }
 
-  if(!resp.empty())
-  {
+  if (!resp.empty()) {
     _response_data.assign(resp.begin(), resp.end());
   }
   return true;
 }
 
-void IOStub::flush_buffers()
-{
-}
+void IOStub::flush_buffers() {}
 
-void IOStub::time(uint64_t& secs, uint64_t& nsecs)
+void IOStub::time(uint64_t & secs, uint64_t & nsecs)
 {
   duration_t d_secs = std::chrono::duration_cast<std::chrono::seconds>(_tm);
   duration_t diff_t = _tm - d_secs;
@@ -282,18 +263,18 @@ void IOStub::reset_time()
   _tm = std::chrono::high_resolution_clock::duration::zero();
 }
 
-void IOStub::add_case(const std::string& name, uint8_t* start, uint8_t* end,
-  const std::vector<size_t>& reads)
+void IOStub::add_case(
+  const std::string & name, uint8_t * start, uint8_t * end, const std::vector<size_t> & reads)
 {
   _cases[name].data.assign(start, end);
   _cases[name].reads = reads;
 }
 
-bool IOStub::offset_read(const std::vector<uint8_t>& data, size_t& offset, uint8_t* buff,
-  size_t max_bytes, size_t& bytes_read)
+bool IOStub::offset_read(
+  const std::vector<uint8_t> & data, size_t & offset, uint8_t * buff, size_t max_bytes,
+  size_t & bytes_read)
 {
-  if(!_valid_tm)
-  {
+  if (!_valid_tm) {
     _tm = std::chrono::high_resolution_clock::now().time_since_epoch();
     _valid_tm = true;
   }
@@ -304,84 +285,63 @@ bool IOStub::offset_read(const std::vector<uint8_t>& data, size_t& offset, uint8
   return true;
 }
 
-std::string IOStub::processConfig(const std::string& name, const std::string& args)
+std::string IOStub::processConfig(const std::string & name, const std::string & args)
 {
   const std::string Response = name + ",1\n";
-  if(args.empty() && _is_config)
-  {
+  if (args.empty() && _is_config) {
     return Response;
   }
 
   std::string resp = "";
-  if(args == "1") //on
+  if (args == "1")  //on
   {
     _is_config = true;
     resp = Response;
-  }
-  else if(args == "0")
-  {
+  } else if (args == "0") {
     _is_config = false;
-  }
-  else
-  {
+  } else {
     resp = "INVALID";
   }
 
   return resp;
 }
 
-std::string IOStub::processTemperature(const std::string& name, const std::string& args)
+std::string IOStub::processTemperature(const std::string & name, const std::string & args)
 {
   std::string resp;
-  if(!args.empty())
-  {
-    if(args == "C")
-    {
+  if (!args.empty()) {
+    if (args == "C") {
       _is_c = true;
-    }
-    else if(args == "F")
-    {
+    } else if (args == "F") {
       _is_c = false;
-    }
-    else
-    {
+    } else {
       resp = "INVALID";
     }
   }
 
-  if(resp.empty())
-  {
+  if (resp.empty()) {
     resp = name + "," + (_is_c ? "C" : "F") + "\n";
   }
 
   return resp;
 }
 
-std::string IOStub::processRotFmt(const std::string& name, const std::string& args)
+std::string IOStub::processRotFmt(const std::string & name, const std::string & args)
 {
   std::string resp;
-  if(!args.empty())
-  {
-    if(args == "DELTA")
-    {
+  if (!args.empty()) {
+    if (args == "DELTA") {
       _is_da = true;
-    }
-    else if(args == "RATE")
-    {
+    } else if (args == "RATE") {
       _is_da = false;
-    }
-    else if(args == "RESET")
-    {
+    } else if (args == "RESET") {
       //TODO: Implement reset statement
-    }
-    else
-    {
+    } else {
       resp = "INVALID";
     }
   }
 
-  if(resp.empty())
-  {
+  if (resp.empty()) {
     resp = name + "," + (_is_da ? "DELTA" : "RATE") + "\n";
   }
 
@@ -390,11 +350,10 @@ std::string IOStub::processRotFmt(const std::string& name, const std::string& ar
 
 namespace
 {
-  std::shared_ptr<IOStub> stub = std::make_shared<IOStub>();
-  std::shared_ptr<kvh::IOModule> mod =
-    std::dynamic_pointer_cast<kvh::IOModule>(stub);
-  kvh::IMU1750 imu(mod);
-}
+std::shared_ptr<IOStub> stub = std::make_shared<IOStub>();
+std::shared_ptr<kvh::IOModule> mod = std::dynamic_pointer_cast<kvh::IOModule>(stub);
+kvh::IMU1750 imu(mod);
+}  // namespace
 
 TEST(TestSuite, earlyMessageTest)
 {
@@ -475,7 +434,7 @@ TEST(TestSuite, commandTests)
   EXPECT_EQ(false, is_c);
 }
 
-int main(int argc, char** argv)
+int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

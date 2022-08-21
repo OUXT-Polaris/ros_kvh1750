@@ -7,19 +7,14 @@
 
 namespace kvh
 {
-
 /**
  * Default constructor
  */
-IOModule::IOModule()
-{
-}
+IOModule::IOModule() {}
 
 /**
  * Default destructor
  */
-IOModule::~IOModule()
-{
-}
+IOModule::~IOModule() {}
 
-}
+}  // namespace kvh

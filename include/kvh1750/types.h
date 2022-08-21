@@ -17,9 +17,11 @@ namespace util
 {
 template <typename... A>
 constexpr std::array<uint8_t, sizeof...(A)> byte_array(A... v)
-{ return std::array<uint8_t, sizeof...(A)>{{static_cast<uint8_t>(v)...}}; }
-
+{
+  return std::array<uint8_t, sizeof...(A)>{{static_cast<uint8_t>(v)...}};
 }
+
+}  // namespace util
 
 #define MAKE_BYTE_ARRAY(...) util::byte_array(__VA_ARGS__)
 
@@ -29,17 +31,20 @@ constexpr std::array<uint8_t, sizeof...(A)> byte_array(A... v)
 
 #include <tr1/array>
 
-#define MAKE_BYTE_ARRAY(...) {__VA_ARGS__}
+#define MAKE_BYTE_ARRAY(...) \
+  {                          \
+    __VA_ARGS__              \
+  }
 #define ARRAY_TYPE std::tr1::array
 
 #endif
 
-#include <string>
 #include <stdint.h>
+
+#include <string>
 
 namespace kvh
 {
-
 //! Constant for convering accelerations to floating point values
 const float Gravity = 9.80665;
 
@@ -56,8 +61,7 @@ const int16_t MaxTemp_C = 75;
  * Enumeration defining which bits in the status field correspond
  * to various sub-components of the system.
  */
-typedef enum
-{
+typedef enum {
   GYRO_X = 1,
   GYRO_Y = 1 << 1,
   GYRO_Z = 1 << 2,
@@ -66,13 +70,7 @@ typedef enum
   ACCEL_Z = 1 << 6
 } StatusBits;
 
-typedef enum
-{
-  X = 0,
-  Y,
-  Z,
-  NUM_FIELDS
-} FieldOrder;
+typedef enum { X = 0, Y, Z, NUM_FIELDS } FieldOrder;
 
 //! CRC Computation values from KVH
 namespace crc
@@ -89,7 +87,7 @@ const uint32_t XOr_Out = 0x0u;
 const bool Reflect_In = false;
 //! Reflect Out Flag
 const bool Reflect_Out = false;
-}
+}  // namespace crc
 
 #pragma pack(push, 1)
 /**
@@ -115,12 +113,10 @@ class Message
 {
 public:
   Message();
-  Message(const RawMessage& raw, uint32_t secs, uint32_t nsecs,
-    bool is_c, bool is_da);
+  Message(const RawMessage & raw, uint32_t secs, uint32_t nsecs, bool is_c, bool is_da);
   ~Message();
 
-  bool from_raw(const RawMessage& raw, uint32_t secs, uint32_t nsecs,
-    bool is_c, bool is_da);
+  bool from_raw(const RawMessage & raw, uint32_t secs, uint32_t nsecs, bool is_c, bool is_da);
 
   float gyro_x() const;
   float gyro_y() const;
@@ -130,9 +126,9 @@ public:
   float accel_z() const;
 
   int16_t temp() const;
-  int16_t temp(bool& is_c) const;
+  int16_t temp(bool & is_c) const;
 
-  void time(uint32_t& secs, uint32_t& nsecs) const;
+  void time(uint32_t & secs, uint32_t & nsecs) const;
   uint8_t sequence_number() const;
 
   bool valid() const;
@@ -148,6 +144,7 @@ public:
 
   void to_celsius();
   void to_farenheit();
+
 protected:
   float _ang_vel[NUM_FIELDS];
   float _lin_accel[NUM_FIELDS];
@@ -163,9 +160,9 @@ protected:
 int16_t to_c(int16_t temp);
 int16_t to_f(int16_t temp);
 
-bool valid_checksum(const RawMessage& msg);
-uint32_t compute_checksum(const char* buff, size_t len);
+bool valid_checksum(const RawMessage & msg);
+uint32_t compute_checksum(const char * buff, size_t len);
 
-}
+}  // namespace kvh
 
 #endif

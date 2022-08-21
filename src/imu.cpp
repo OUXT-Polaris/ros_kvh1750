@@ -7,27 +7,25 @@
 #include "kvh1750/imu.h"
 
 #include <algorithm>
-
 #include <sstream>
 
 namespace kvh
 {
-
 namespace
 {
-  const std::string RFCmd = "ROTFMT";
-  const std::string DRCmd = "DR";
-  const std::string TUCmd = "TEMPUNITS";
-  const std::string ConfigCmd = "CONFIG";
-}
+const std::string RFCmd = "ROTFMT";
+const std::string DRCmd = "DR";
+const std::string TUCmd = "TEMPUNITS";
+const std::string ConfigCmd = "CONFIG";
+}  // namespace
 
-const std::vector<int> IMU1750::DataRates {1, 5, 10, 25, 50, 100, 250, 500, 750, 1000};
+const std::vector<int> IMU1750::DataRates{1, 5, 10, 25, 50, 100, 250, 500, 750, 1000};
 
 /**
  * Default constructor
  */
 IMU1750::IMU1750(std::shared_ptr<IOModule> mod)
-  :_io(mod),
+: _io(mod),
   _buff(sizeof(kvh::RawMessage), 0),
   _bytes_read(0),
   _rate(IMU1750::DataRates.back()),
@@ -45,27 +43,21 @@ IMU1750::IMU1750(std::shared_ptr<IOModule> mod)
 /**
  * Default destructor
  */
-IMU1750::~IMU1750()
-{
-}
+IMU1750::~IMU1750() {}
 
 /**
  * Sets temperature limit over which over temp is reported
  */
-void IMU1750::set_temp_limit(int max_temp)
-{
-  _max_temp = max_temp;
-}
+void IMU1750::set_temp_limit(int max_temp) { _max_temp = max_temp; }
 
 /**
  * Public read interface, which attempts to read a new KVH message
  * \param[in] msg Storage location for new message.
  * \param[out] size_t Flag indicating read success.
  */
-typename IMU1750::ParseResults IMU1750::read(kvh::Message& msg)
+typename IMU1750::ParseResults IMU1750::read(kvh::Message & msg)
 {
-  if(!base_read())
-  {
+  if (!base_read()) {
     return BAD_READ;
   }
   std::vector<uint8_t>::iterator match = _buff.end();
@@ -73,32 +65,26 @@ typename IMU1750::ParseResults IMU1750::read(kvh::Message& msg)
 
   IMU1750::ParseResults result = VALID;
 
-  if(header_start && _bytes_read >= sizeof(kvh::RawMessage))
-  {
+  if (header_start && _bytes_read >= sizeof(kvh::RawMessage)) {
     //get timestamp from reading
     uint32_t secs = 0;
     uint32_t nsecs = 0;
     _io->time(secs, nsecs);
-    kvh::RawMessage* raw = reinterpret_cast<kvh::RawMessage*>(&_buff.front());
+    kvh::RawMessage * raw = reinterpret_cast<kvh::RawMessage *>(&_buff.front());
     result = (msg.from_raw(*raw, secs, nsecs, _is_c, _is_da) ? VALID : BAD_CRC);
     //cleanup from successful read
     reset_buffer();
 
     bool celsius;
     int temp = msg.temp(celsius);
-    if(!celsius)
-    {
+    if (!celsius) {
       kvh::to_c(temp);
     }
-    if(temp >= _max_temp)
-    {
+    if (temp >= _max_temp) {
       result = OVER_TEMP;
     }
-  }
-  else
-  {
-    if(match != _buff.begin())
-    {
+  } else {
+    if (match != _buff.begin()) {
       reset_partial_buffer(match);
     }
     result = PARTIAL_READ;
@@ -112,39 +98,31 @@ typename IMU1750::ParseResults IMU1750::read(kvh::Message& msg)
  * stop data from the IMU.
  * \param[out] Rate in Hz
  */
-int IMU1750::imu_rate() const
-{
-  return _rate;
-}
+int IMU1750::imu_rate() const { return _rate; }
 
 /**
  * Reports last read temperature units from IMU. This does not stop
  * data from the IMU.
  * \param[out] Flag indicating if temperatures are in Celsius
  */
-bool IMU1750::is_celsius() const
-{
-  return _is_c;
-}
+bool IMU1750::is_celsius() const { return _is_c; }
 
 /**
  * Queries the IMU to determine the temperature units.
  * \param[in,out] is_celsius Flag set to indicate if temperature is in C
  * \param[out] Flag indicating if the query came back valid
  */
-bool IMU1750::query_temp_units(bool& celsius)
+bool IMU1750::query_temp_units(bool & celsius)
 {
   std::string cmd = build_command(TUCmd, "", true);
   set_mode(true);
   cmd_write(cmd);
 
   bool status = cmd_read();
-  if(status)
-  {
+  if (status) {
     std::vector<uint8_t>::iterator match;
     status = find_response(TUCmd, match) && parse_temp_units(match);
-    if(status)
-    {
+    if (status) {
       celsius = _is_c;
     }
   }
@@ -159,19 +137,17 @@ bool IMU1750::query_temp_units(bool& celsius)
  * to be an angular rate
  * \param[out] Flag indicating if query was processed.
  */
-bool IMU1750::query_angle_units(bool& is_da)
+bool IMU1750::query_angle_units(bool & is_da)
 {
   std::string cmd = build_command(RFCmd, "", true);
   set_mode(true);
   cmd_write(cmd);
 
   bool status = cmd_read();
-  if(status)
-  {
+  if (status) {
     std::vector<uint8_t>::iterator match;
     status = find_response(RFCmd, match);
-    if(status)
-    {
+    if (status) {
       status = parse_angle_units(match);
     }
   }
@@ -185,17 +161,15 @@ bool IMU1750::query_angle_units(bool& is_da)
  * \param[in,out] rate_hz Reporting rate in Hz.
  * \param[out] Flag indicating if query succeeded.
  */
-bool IMU1750::query_data_rate(int& rate_hz)
+bool IMU1750::query_data_rate(int & rate_hz)
 {
   std::string cmd = build_command(DRCmd, "", true);
   set_mode(true);
   cmd_write(cmd);
   bool status = cmd_read();
-  if(status)
-  {
+  if (status) {
     std::vector<uint8_t>::iterator match;
-    status = find_response(DRCmd, match) &&
-      parse_data_rate(match, rate_hz);
+    status = find_response(DRCmd, match) && parse_data_rate(match, rate_hz);
   }
   set_mode(false);
   return status;
@@ -214,8 +188,7 @@ bool IMU1750::set_temp_units(bool celsius)
   cmd_write(cmd);
 
   bool status = cmd_read();
-  if(status)
-  {
+  if (status) {
     std::vector<uint8_t>::iterator match;
     status = find_response(TUCmd, match) && parse_temp_units(match);
   }
@@ -230,10 +203,9 @@ bool IMU1750::set_temp_units(bool celsius)
  */
 bool IMU1750::set_data_rate(int rate_hz)
 {
-  std::vector<int>::const_iterator dr_match = std::find(IMU1750::DataRates.begin(),
-    IMU1750::DataRates.end(), rate_hz);
-  if(dr_match == IMU1750::DataRates.end())
-  {
+  std::vector<int>::const_iterator dr_match =
+    std::find(IMU1750::DataRates.begin(), IMU1750::DataRates.end(), rate_hz);
+  if (dr_match == IMU1750::DataRates.end()) {
     return false;
   }
 
@@ -263,12 +235,10 @@ bool IMU1750::set_angle_units(bool is_da)
   cmd_write(cmd);
 
   bool status = cmd_read();
-  if(status)
-  {
+  if (status) {
     std::vector<uint8_t>::iterator match;
     status = find_response(RFCmd, match);
-    if(status)
-    {
+    if (status) {
       status = parse_angle_units(match);
     }
   }
@@ -282,8 +252,7 @@ bool IMU1750::set_angle_units(bool is_da)
  */
 void IMU1750::set_mode(bool enter_config)
 {
-  if(enter_config == _is_config)
-  {
+  if (enter_config == _is_config) {
     return;
   }
 
@@ -292,8 +261,7 @@ void IMU1750::set_mode(bool enter_config)
   cmd_write(cmd);
 
   //normal mode never responds with confirmation
-  if(enter_config)
-  {
+  if (enter_config) {
     reset_buffer();
     cmd_read();
   }
@@ -311,13 +279,10 @@ bool IMU1750::parse_angle_units(std::vector<uint8_t>::iterator match)
   bool status = false;
   const std::string Delta = "DELTA";
   const std::string Rate = "RATE";
-  if(std::equal(Delta.begin(), Delta.end(), match))
-  {
+  if (std::equal(Delta.begin(), Delta.end(), match)) {
     _is_da = true;
     status = true;
-  }
-  else if(std::equal(Rate.begin(), Rate.end(), match))
-  {
+  } else if (std::equal(Rate.begin(), Rate.end(), match)) {
     _is_da = false;
     status = true;
   }
@@ -333,8 +298,7 @@ bool IMU1750::parse_angle_units(std::vector<uint8_t>::iterator match)
 bool IMU1750::parse_temp_units(std::vector<uint8_t>::iterator match)
 {
   bool status = true;
-  switch(*match)
-  {
+  switch (*match) {
     case 'C':
       _is_c = true;
       break;
@@ -355,9 +319,9 @@ bool IMU1750::parse_temp_units(std::vector<uint8_t>::iterator match)
  * \param[in,out] Rate value parsed
  * \param[out] Flag indicating if response was correctly parsed
  */
-bool IMU1750::parse_data_rate(std::vector<uint8_t>::iterator match, int& rate)
+bool IMU1750::parse_data_rate(std::vector<uint8_t>::iterator match, int & rate)
 {
-  rate = std::strtol(reinterpret_cast<char*>(&*match), NULL, 10);
+  rate = std::strtol(reinterpret_cast<char *>(&*match), NULL, 10);
   return true;
 }
 
@@ -370,12 +334,9 @@ bool IMU1750::base_read(bool use_tov)
 {
   size_t bytes = 0;
   bool status = _io->read(&_buff.front() + _bytes_read, bytes_remaining(), bytes, use_tov);
-  if(!status)
-  {
+  if (!status) {
     reset_buffer();
-  }
-  else
-  {
+  } else {
     _bytes_read += bytes;
   }
   return status;
@@ -390,16 +351,12 @@ bool IMU1750::cmd_read()
   const size_t MaxReadAttempts = 20;
 
   bool response = false;
-  for(size_t ii = 0; !response && ii < MaxReadAttempts; ++ii)
-  {
+  for (size_t ii = 0; !response && ii < MaxReadAttempts; ++ii) {
     base_read(false);
 
-    if(_buff[_bytes_read - 1] == '\n')
-    {
+    if (_buff[_bytes_read - 1] == '\n') {
       response = true;
-    }
-    else if(bytes_remaining() == 0)
-    {
+    } else if (bytes_remaining() == 0) {
       reset_buffer();
     }
   }
@@ -410,11 +367,11 @@ bool IMU1750::cmd_read()
 /**
  * Write command to IMU.
  */
-bool IMU1750::cmd_write(const std::string& cmd)
+bool IMU1750::cmd_write(const std::string & cmd)
 {
   _io->flush_buffers();
   reset_buffer();
-  return _io->write(reinterpret_cast<const uint8_t*>(cmd.c_str()), cmd.length());
+  return _io->write(reinterpret_cast<const uint8_t *>(cmd.c_str()), cmd.length());
 }
 
 /**
@@ -422,7 +379,7 @@ bool IMU1750::cmd_write(const std::string& cmd)
  * \param[in,out] iterator pointing to location of header
  * \param[out] Flag indicating if header is at the start of the header.
  */
-bool IMU1750::find_header(bool is_imu, std::vector<uint8_t>::iterator& match)
+bool IMU1750::find_header(bool is_imu, std::vector<uint8_t>::iterator & match)
 {
   HeaderType::const_iterator header_start = (is_imu ? IMUHeader.begin() : BITHeader.begin());
   HeaderType::const_iterator header_end = (is_imu ? IMUHeader.end() : BITHeader.end());
@@ -448,15 +405,15 @@ void IMU1750::reset_buffer()
  * to simplify processing.
  * \param[in] match Iterator pointing to start of header.
  */
-void IMU1750::reset_partial_buffer(const std::vector<uint8_t>::iterator& match)
+void IMU1750::reset_partial_buffer(const std::vector<uint8_t>::iterator & match)
 {
   std::vector<uint8_t>::iterator buffer_end = _buff.begin() + _bytes_read;
   //start at either the match, or the longest missable substring
-  std::vector<uint8_t>::iterator start = std::min(match, std::max(_buff.begin(),
-    buffer_end - (HeaderSize - 1)));
+  std::vector<uint8_t>::iterator start =
+    std::min(match, std::max(_buff.begin(), buffer_end - (HeaderSize - 1)));
   _backup_buff.clear();
   _backup_buff.insert(_backup_buff.end(), start, buffer_end);
-  _backup_buff.resize(sizeof(kvh::RawMessage), 0); //force size to be the same
+  _backup_buff.resize(sizeof(kvh::RawMessage), 0);  //force size to be the same
   _bytes_read = buffer_end - start;
   _buff.swap(_backup_buff);
 }
@@ -464,10 +421,7 @@ void IMU1750::reset_partial_buffer(const std::vector<uint8_t>::iterator& match)
 /**
  * Number of bytes available for writing in the buffer.
  */
-size_t IMU1750::bytes_remaining() const
-{
-  return _buff.size() - _bytes_read;
-}
+size_t IMU1750::bytes_remaining() const { return _buff.size() - _bytes_read; }
 
 /**
  * Sets the buffer size in case larger messages need to be read.
@@ -475,10 +429,9 @@ size_t IMU1750::bytes_remaining() const
  */
 void IMU1750::set_buffer_size(size_t len)
 {
-  std::vector<uint8_t>::reverse_iterator start = std::max(_buff.rend(),
-    _buff.rbegin() + len);
-  std::vector<uint8_t> new_buffer(start, _buff.rend()); //copy last len bytes
-  new_buffer.resize(len, 0); //make sure size is correct
+  std::vector<uint8_t>::reverse_iterator start = std::max(_buff.rend(), _buff.rbegin() + len);
+  std::vector<uint8_t> new_buffer(start, _buff.rend());  //copy last len bytes
+  new_buffer.resize(len, 0);                             //make sure size is correct
   _buff.swap(new_buffer);
 }
 
@@ -489,13 +442,11 @@ void IMU1750::set_buffer_size(size_t len)
  * \param[in] Flag indicating if command is a query or not.
  * \param[out] String containing the fully built command
  */
-std::string IMU1750::build_command(const std::string& type, const std::string& val,
-  bool is_query)
+std::string IMU1750::build_command(const std::string & type, const std::string & val, bool is_query)
 {
   std::stringstream ss;
   ss << (is_query ? "?" : "=") << type;
-  if(!is_query)
-  {
+  if (!is_query) {
     ss << "," << val;
   }
   ss << "\n";
@@ -508,16 +459,14 @@ std::string IMU1750::build_command(const std::string& type, const std::string& v
  * \param[in,out] Iterator pointing at start of response arguments
  * \pram[out] Flag indicating if response was found
  */
-bool IMU1750::find_response(const std::string& type,
-  std::vector<uint8_t>::iterator& match)
+bool IMU1750::find_response(const std::string & type, std::vector<uint8_t>::iterator & match)
 {
   std::string FullMatch = type + ",";
-  match = std::search(_buff.begin(), _buff.end(),
-    FullMatch.begin(), FullMatch.end());
+  match = std::search(_buff.begin(), _buff.end(), FullMatch.begin(), FullMatch.end());
 
   bool status = (match != _buff.end());
   match += FullMatch.length();
   return status;
 }
 
-}
+}  // namespace kvh

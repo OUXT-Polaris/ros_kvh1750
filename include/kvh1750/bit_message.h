@@ -6,12 +6,11 @@
 #ifndef _KVH1750_BIT_MESSAGE_H_
 #define _KVH1750_BIT_MESSAGE_H_
 
-#include <vector>
 #include <cstring>
+#include <vector>
 
 namespace kvh
 {
-
 //! Number of status bytes in the message
 const size_t NumStatusBytes = 6;
 //! Number of bits used in each byte
@@ -39,10 +38,10 @@ class BITMessage
 {
 public:
   BITMessage();
-  BITMessage(const BITRawMessage& raw);
+  BITMessage(const BITRawMessage & raw);
   ~BITMessage();
 
-  bool from_raw(const BITRawMessage& raw);
+  bool from_raw(const BITRawMessage & raw);
 
   //gyro
   bool gyro_x_sld() const;
@@ -91,10 +90,11 @@ public:
   bool hispeed_sport() const;
   bool aux_sport() const;
   bool software() const;
+
 private:
   std::vector<bool> _status;
 };
 
-}
+}  // namespace kvh
 
 #endif
