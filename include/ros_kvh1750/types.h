@@ -155,7 +155,7 @@ public:
   int16_t temp() const;
   int16_t temp(bool & is_c) const;
 
-  void time(uint32_t & secs, uint32_t & nsecs) const;
+  void time(int32_t & secs, uint32_t & nsecs) const;
   uint8_t sequence_number() const;
 
   bool valid() const;
@@ -175,7 +175,7 @@ public:
 protected:
   float _ang_vel[NUM_FIELDS];
   float _lin_accel[NUM_FIELDS];
-  uint32_t _secs;
+  int32_t _secs;
   uint32_t _nsecs;
   int16_t _temp;
   uint8_t _status;

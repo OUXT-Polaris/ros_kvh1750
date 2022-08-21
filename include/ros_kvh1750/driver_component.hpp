@@ -69,6 +69,8 @@ extern "C" {
 #include <ros_kvh1750/tov_file.h>
 
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/temperature.hpp>
 
 namespace ros_kvh1750
 {
@@ -77,6 +79,16 @@ class DriverComponent : public rclcpp::Node
 public:
   ROS_KVH_1750_DRIVER_COMPONENT_PUBLIC
   DriverComponent(const rclcpp::NodeOptions & options);
+
+private:
+  void toRos(
+    const kvh::Message & msg, sensor_msgs::msg::Imu & imu, sensor_msgs::msg::Temperature & temp);
+  bool IsDA;
+  double Ahrs_gyro_x = 0;
+  double Ahrs_gyro_y = 0;
+  double Ahrs_gyro_z = 0;
+  double Prev_stamp = 0;
+  int Rate;
 };
 }  // namespace ros_kvh1750
 

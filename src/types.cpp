@@ -165,7 +165,7 @@ int16_t Message::temp(bool & is_c) const
 /**
  * Returns the time this message was recorded.
  */
-void Message::time(uint32_t & secs, uint32_t & nsecs) const
+void Message::time(int32_t & secs, uint32_t & nsecs) const
 {
   secs = _secs;
   nsecs = _nsecs;
