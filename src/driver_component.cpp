@@ -26,3 +26,14 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include <ros_kvh1750/driver_component.hpp>
+
+namespace ros_kvh1750
+{
+DriverComponent::DriverComponent(const rclcpp::NodeOptions & options)
+: Node("ros_kvh1750_driver", options)
+{
+}
+}  // namespace ros_kvh1750
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(ros_kvh1750::DriverComponent)

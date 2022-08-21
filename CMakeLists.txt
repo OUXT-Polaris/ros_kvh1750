@@ -26,16 +26,19 @@ ament_auto_find_build_dependencies()
 ## Your package locations should be listed before other locations
 include_directories(include)
 
-ament_auto_add_library(kvh1750
+ament_auto_add_library(kvh1750 SHARED
   src/iomodule.cpp
   src/types.cpp
   src/imu.cpp
   src/tov_file.cpp
   src/bit_message.cpp)
 
-ament_auto_add_library(driver_component
+ament_auto_add_library(driver_component SHARED
   src/driver_component.cpp)
-target_link_libraries(driver_component kvh_1750)
+target_link_libraries(driver_component kvh1750)
+target_compile_definitions(driver_component PRIVATE "ROS_KVH_1750_DRIVER_COMPONENT_BUILDING_DLL")
+rclcpp_components_register_nodes(driver_component
+  "ros_kvh1750::DriverComponent")
 
 #catkin_add_gtest(kvh1750-test test/utest.cpp)
 #if(TARGET ${PROJECT_NAME}-test)

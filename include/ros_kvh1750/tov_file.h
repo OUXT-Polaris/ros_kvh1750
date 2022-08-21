@@ -70,6 +70,6 @@ protected:
   bool _valid_tm;  //! Flag indicating if time is valid
 };
 
-};  // namespace kvh
+}  // namespace kvh
 
 #endif

@@ -65,4 +65,19 @@ extern "C" {
 }  // extern "C"
 #endif
 
+#include <ros_kvh1750/kvh_plugin.h>
+#include <ros_kvh1750/tov_file.h>
+
+#include <rclcpp/rclcpp.hpp>
+
+namespace ros_kvh1750
+{
+class DriverComponent : public rclcpp::Node
+{
+public:
+  ROS_KVH_1750_DRIVER_COMPONENT_PUBLIC
+  DriverComponent(const rclcpp::NodeOptions & options);
+};
+}  // namespace ros_kvh1750
+
 #endif  // ROS_KVH_1750__DRIVER_COMPONENT_HPP_
