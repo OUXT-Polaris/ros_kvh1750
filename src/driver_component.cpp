@@ -1,4 +1,4 @@
-// Copyright 2015 Jason Ziglar.
+// Copyright 2022 OUXT Polaris.
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
 //
@@ -25,23 +25,4 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-/**
- * IOModule definition
- * \author: Jason Ziglar <jpz@vt.edu>
- * \date: 02/25/2015
- */
-#include "ros_kvh1750/iomodule.h"
-
-namespace kvh
-{
-/**
- * Default constructor
- */
-IOModule::IOModule() {}
-
-/**
- * Default destructor
- */
-IOModule::~IOModule() {}
-
-}  // namespace kvh
+#include <ros_kvh1750/driver_component.hpp>

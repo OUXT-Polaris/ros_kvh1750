@@ -30,7 +30,7 @@
  * \author Jason Ziglar <jpz@vt.edu>
  * \date 02/16/2015
  */
-#include "kvh1750/types.h"
+#include "ros_kvh1750/types.h"
 
 #include <byteswap.h>
 

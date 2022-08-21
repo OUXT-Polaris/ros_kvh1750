@@ -36,7 +36,7 @@
 
 #include <memory>
 
-#include "kvh1750/types.h"
+#include "ros_kvh1750/types.h"
 
 namespace kvh
 {

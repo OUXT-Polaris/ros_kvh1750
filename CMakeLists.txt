@@ -33,6 +33,10 @@ ament_auto_add_library(kvh1750
   src/tov_file.cpp
   src/bit_message.cpp)
 
+ament_auto_add_library(driver_component
+  src/driver_component.cpp)
+target_link_libraries(driver_component kvh_1750)
+
 #catkin_add_gtest(kvh1750-test test/utest.cpp)
 #if(TARGET ${PROJECT_NAME}-test)
 #  target_link_libraries(kvh1750-test kvh1750 ${catkin_LIBRARIES})

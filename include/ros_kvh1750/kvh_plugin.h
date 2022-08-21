@@ -33,7 +33,7 @@
 #ifndef _KVH_PLUGIN_H_
 #define _KVH_PLUGIN_H_
 
-#include "kvh1750/types.h"
+#include "ros_kvh1750/types.h"
 
 namespace kvh
 {

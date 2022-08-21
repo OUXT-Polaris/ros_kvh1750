@@ -31,7 +31,7 @@
  * \date: 02/15/2015
  * Copyright 2015, Virginia Tech. All Rights Reserved.
  */
-#include "kvh1750/imu.h"
+#include "ros_kvh1750/imu.h"
 
 #include <algorithm>
 #include <sstream>

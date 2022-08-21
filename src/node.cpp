@@ -44,8 +44,8 @@
 
 #include <boost/circular_buffer.hpp>
 
-#include "kvh1750/kvh_plugin.h"
-#include "kvh1750/tov_file.h"
+#include "ros_kvh1750/kvh_plugin.h"
+#include "ros_kvh1750/tov_file.h"
 
 namespace
 {

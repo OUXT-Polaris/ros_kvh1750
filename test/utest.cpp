@@ -37,7 +37,7 @@
 #include <map>
 #include <memory>
 
-#include "kvh1750/imu.h"
+#include "ros_kvh1750/imu.h"
 
 //Make C++11x support not required
 #if __cplusplus >= 201103L

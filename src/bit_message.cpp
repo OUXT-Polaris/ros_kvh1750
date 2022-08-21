@@ -30,7 +30,7 @@
  * \author: Jason Ziglar <jpz@vt.edu>
  * \date: 02-21-2015
  */
-#include "kvh1750/bit_message.h"
+#include "ros_kvh1750/bit_message.h"
 
 #include <cstdint>
 
