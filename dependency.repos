@@ -3,7 +3,3 @@ repositories:
     type: git
     url: https://github.com/OUXT-Polaris/ouxt_common.git
     version: master
-  serial:
-    type: git
-    url: https://github.com/OUXT-Polaris/serial.git
-    version: ros2
