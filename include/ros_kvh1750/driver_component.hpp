@@ -83,12 +83,16 @@ public:
 private:
   void toRos(
     const kvh::Message & msg, sensor_msgs::msg::Imu & imu, sensor_msgs::msg::Temperature & temp);
-  bool IsDA;
-  double Ahrs_gyro_x = 0;
-  double Ahrs_gyro_y = 0;
-  double Ahrs_gyro_z = 0;
-  double Prev_stamp = 0;
-  int Rate;
+  bool is_da_;
+  double ahrs_gyro_x_ = 0;
+  double ahrs_gyro_y_ = 0;
+  double ahrs_gyro_z_ = 0;
+  double prev_stamp_ = 0;
+  int rate_;
+  std::string imu_frame_;
+  rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::Temperature>::SharedPtr temp_pub_;
+  std::shared_ptr<kvh::MessageProcessorBase> plugin_;
 };
 }  // namespace ros_kvh1750
 

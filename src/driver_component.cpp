@@ -27,6 +27,7 @@
 
 #include <quaternion_operation/quaternion_operation.h>
 
+#include <pluginlib/class_loader.hpp>
 #include <ros_kvh1750/driver_component.hpp>
 
 namespace ros_kvh1750
@@ -34,6 +35,25 @@ namespace ros_kvh1750
 DriverComponent::DriverComponent(const rclcpp::NodeOptions & options)
 : Node("ros_kvh1750_driver", options)
 {
+  std::string imu_topic;
+  declare_parameter<std::string>("imu_topic", "imu");
+  get_parameter<std::string>("imu_topic", imu_topic);
+  imu_pub_ = create_publisher<sensor_msgs::msg::Imu>(imu_topic, 1);
+  std::string temperature_topic;
+  declare_parameter<std::string>("temperature_topic", "temp");
+  get_parameter<std::string>("temperature_topic", temperature_topic);
+  temp_pub_ = create_publisher<sensor_msgs::msg::Temperature>(temperature_topic, 1);
+  declare_parameter<std::string>("imu_frame", "imu");
+  get_parameter<std::string>("imu_frame", imu_frame_);
+  std::string plugin_name;
+  declare_parameter<std::string>("processor_type", "");
+  get_parameter<std::string>("processor_type", plugin_name);
+  if (!plugin_name.empty()) {
+    pluginlib::ClassLoader<kvh::MessageProcessorBase> plugin_loader(
+      "ros_kvh1750", "kvh::KVHMessageProcessorBase");
+    plugin_ = plugin_loader.createSharedInstance(plugin_name);
+    plugin_->set_link_name(imu_frame_);
+  }
 }
 
 void DriverComponent::toRos(
@@ -49,32 +69,32 @@ void DriverComponent::toRos(
   imu.linear_acceleration.z = msg.accel_z();
 
   //scale for ROS if delta angles are enabled
-  if (IsDA) {
-    Ahrs_gyro_x += msg.gyro_x();
-    Ahrs_gyro_y += msg.gyro_y();
-    Ahrs_gyro_z += msg.gyro_z();
+  if (is_da_) {
+    ahrs_gyro_x_ += msg.gyro_x();
+    ahrs_gyro_y_ += msg.gyro_y();
+    ahrs_gyro_z_ += msg.gyro_z();
 
-    imu.angular_velocity.x *= Rate;
-    imu.angular_velocity.y *= Rate;
-    imu.angular_velocity.z *= Rate;
+    imu.angular_velocity.x *= rate_;
+    imu.angular_velocity.y *= rate_;
+    imu.angular_velocity.z *= rate_;
   } else {
     double current_stamp = imu.header.stamp.sec + imu.header.stamp.nanosec * 1E-9;
     double deltatime;
-    if (Prev_stamp) {
-      deltatime = current_stamp - Prev_stamp;
+    if (prev_stamp_) {
+      deltatime = current_stamp - prev_stamp_;
     } else {
-      deltatime = 1 / Rate;
+      deltatime = 1 / rate_;
     }
-    Ahrs_gyro_x += msg.gyro_x() * deltatime;
-    Ahrs_gyro_y += msg.gyro_y() * deltatime;
-    Ahrs_gyro_z += msg.gyro_z() * deltatime;
-    Prev_stamp = current_stamp;
+    ahrs_gyro_x_ += msg.gyro_x() * deltatime;
+    ahrs_gyro_y_ += msg.gyro_y() * deltatime;
+    ahrs_gyro_z_ += msg.gyro_z() * deltatime;
+    prev_stamp_ = current_stamp;
   }
 
   geometry_msgs::msg::Vector3 vec;
-  vec.x = Ahrs_gyro_x;
-  vec.y = Ahrs_gyro_y;
-  vec.z = Ahrs_gyro_z;
+  vec.x = ahrs_gyro_x_;
+  vec.y = ahrs_gyro_y_;
+  vec.z = ahrs_gyro_z_;
   imu.orientation = quaternion_operation::convertEulerAngleToQuaternion(vec);
   temp.header.stamp = imu.header.stamp;
   temp.temperature = msg.temp();
