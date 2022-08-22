@@ -79,6 +79,7 @@ class DriverComponent : public rclcpp::Node
 public:
   ROS_KVH_1750_DRIVER_COMPONENT_PUBLIC
   DriverComponent(const rclcpp::NodeOptions & options);
+  ~DriverComponent();
 
 private:
   void toRos(
@@ -101,6 +102,7 @@ private:
   std::shared_ptr<kvh::IOModule> io_module_;
   std::shared_ptr<kvh::IMU1750> imu_;
   void read();
+  std::thread read_thread_;
   // std::shared_ptr<kvh::MessageProcessorBase> plugin_;
 };
 }  // namespace ros_kvh1750

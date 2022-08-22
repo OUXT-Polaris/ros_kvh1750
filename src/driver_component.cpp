@@ -82,7 +82,11 @@ DriverComponent::DriverComponent(const rclcpp::NodeOptions & options)
   }
   imu_->query_data_rate(rate_);
   imu_->query_angle_units(is_da_);
+
+  read_thread_ = std::thread(std::bind(&DriverComponent::read, this));
 }
+
+DriverComponent::~DriverComponent() { read_thread_.join(); }
 
 void DriverComponent::read()
 {
