@@ -84,6 +84,33 @@ DriverComponent::DriverComponent(const rclcpp::NodeOptions & options)
   imu_->query_angle_units(is_da_);
 }
 
+void DriverComponent::read()
+{
+  while (rclcpp::ok()) {
+    kvh::Message msg;
+    switch (imu_->read(msg)) {
+      case kvh::IMU1750::VALID:
+        toRos(msg, current_imu_, current_temp_);
+        imu_pub_->publish(current_imu_);
+        temp_pub_->publish(current_temp_);
+        break;
+      case kvh::IMU1750::BAD_READ:
+      case kvh::IMU1750::BAD_CRC:
+        RCLCPP_ERROR(get_logger(), "Bad data from KVH, ignoring.");
+        break;
+      case kvh::IMU1750::FATAL_ERROR:
+        RCLCPP_FATAL(get_logger(), "Lost connection to IMU!");
+        break;
+      case kvh::IMU1750::OVER_TEMP:
+        RCLCPP_FATAL(get_logger(), "IMU is overheating!");
+        break;
+      case kvh::IMU1750::PARTIAL_READ:
+      default:
+        break;
+    }
+  }
+}
+
 void DriverComponent::toRos(
   const kvh::Message & msg, sensor_msgs::msg::Imu & imu, sensor_msgs::msg::Temperature & temp)
 {

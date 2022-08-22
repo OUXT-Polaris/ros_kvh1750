@@ -100,6 +100,7 @@ private:
   std::vector<double> lin_cov_;
   std::shared_ptr<kvh::IOModule> io_module_;
   std::shared_ptr<kvh::IMU1750> imu_;
+  void read();
   // std::shared_ptr<kvh::MessageProcessorBase> plugin_;
 };
 }  // namespace ros_kvh1750
