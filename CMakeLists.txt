@@ -40,6 +40,11 @@ target_compile_definitions(driver_component PRIVATE "ROS_KVH_1750_DRIVER_COMPONE
 rclcpp_components_register_nodes(driver_component
   "ros_kvh1750::DriverComponent")
 
+ament_auto_add_executable(driver_node
+  src/driver_node.cpp
+)
+target_link_libraries(driver_node driver_component kvh1750)
+
 #catkin_add_gtest(kvh1750-test test/utest.cpp)
 #if(TARGET ${PROJECT_NAME}-test)
 #  target_link_libraries(kvh1750-test kvh1750 ${catkin_LIBRARIES})

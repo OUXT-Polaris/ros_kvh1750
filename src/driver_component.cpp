@@ -27,7 +27,6 @@
 
 #include <quaternion_operation/quaternion_operation.h>
 
-#include <pluginlib/class_loader.hpp>
 #include <ros_kvh1750/driver_component.hpp>
 
 namespace ros_kvh1750
@@ -45,15 +44,44 @@ DriverComponent::DriverComponent(const rclcpp::NodeOptions & options)
   temp_pub_ = create_publisher<sensor_msgs::msg::Temperature>(temperature_topic, 1);
   declare_parameter<std::string>("imu_frame", "imu");
   get_parameter<std::string>("imu_frame", imu_frame_);
-  std::string plugin_name;
-  declare_parameter<std::string>("processor_type", "");
-  get_parameter<std::string>("processor_type", plugin_name);
-  if (!plugin_name.empty()) {
-    pluginlib::ClassLoader<kvh::MessageProcessorBase> plugin_loader(
-      "ros_kvh1750", "kvh::KVHMessageProcessorBase");
-    plugin_ = plugin_loader.createSharedInstance(plugin_name);
-    plugin_->set_link_name(imu_frame_);
+  declare_parameter<int>("rate", 100);
+  get_parameter<int>("rate", rate_);
+  declare_parameter<bool>("use_delta_angles", true);
+  get_parameter<bool>("use_delta_angles", use_delta_angles_);
+  declare_parameter<std::vector<double>>("orientation_covariance", {1, 0, 0, 0, 1, 0, 0, 0, 1});
+  get_parameter<std::vector<double>>("orientation_covariance", ahrs_cov_);
+  std::copy(ahrs_cov_.begin(), ahrs_cov_.end(), current_imu_.orientation_covariance.begin());
+  declare_parameter<std::vector<double>>("linear_covariance", {1, 0, 0, 0, 1, 0, 0, 0, 1});
+  get_parameter<std::vector<double>>("linear_covariance", lin_cov_);
+  std::copy(lin_cov_.begin(), lin_cov_.end(), current_imu_.linear_acceleration_covariance.begin());
+  // plugin_ = std::make_shared<kvh::MessageProcessorBase>();
+  // plugin_->set_link_name(imu_frame_);
+  current_temp_.header.frame_id = imu_frame_;
+  current_imu_.header.frame_id = imu_frame_;
+  std::string address, tov_address;
+  declare_parameter<std::string>("address", "/dev/ttyS4");
+  get_parameter<std::string>("address", address);
+  declare_parameter<std::string>("tov_address", "");
+  get_parameter<std::string>("tov_address", tov_address);
+  declare_parameter<int>("baudrate", 921600);
+  uint32_t baud = static_cast<uint32_t>(get_parameter("baudrate").as_int());
+  int max_temp;
+  declare_parameter<int>("max_temp", kvh::MaxTemp_C);
+  get_parameter<int>("max_temp", max_temp);
+
+  io_module_ = std::shared_ptr<kvh::IOModule>(new kvh::TOVFile(address, baud, 100, tov_address));
+  imu_ = std::make_shared<kvh::IMU1750>(io_module_);
+  imu_->set_temp_limit(max_temp);
+  if (!imu_->set_angle_units(use_delta_angles_)) {
+    RCLCPP_ERROR(get_logger(), "Could not set angle units.");
   }
+  if (rate_ > 0) {
+    if (!imu_->set_data_rate(rate_)) {
+      RCLCPP_ERROR(get_logger(), "Could not set data rate to %d", rate_);
+    }
+  }
+  imu_->query_data_rate(rate_);
+  imu_->query_angle_units(is_da_);
 }
 
 void DriverComponent::toRos(

@@ -28,18 +28,15 @@ This ROS package provides an interface to interface with the [KVH 1750 IMU](http
 # Configuration
 
 1. `link_name` - link IMU is associated with
-2. `processor_type` - string representing name of a [pluginlib](http://wiki.ros.org/pluginlib) plugin to load for processing processing IMU data. This should be based on the MessageProcessorBase class in the repository.
-3. `rate` - Frequency to set the IMU reporting data.
-4. `use_delta_angles` - sets whether the IMU reports delta angles (change in angles between readings) or angular rates.
-5. `priority` - Priority for this node to be inserted into the scheduler.
-6. `use_rt` - Flag to indicate if the node should be inserted into the round-robin scheduler.
-7. `orientation_covariance` - Array of orientation covariances inserted into each IMU message.
-8. `angular_covariance` - Array of angular covariances inserted into each IMU message.
-9. `linear_covariance` - Array of linear covariances inserted into each IMU message.
-10. `address` - The file to open for reading the IMU.
-11. `tov_address` - File to open for reading the time-of-validity signal. This uses the [serial](http://wiki.ros.org/serial) library to perform the reading.
-12. `baudrate` - Baud rate at which to read the IMU. *NOTE:* This must match the setting on the IMU, or else communication cannot be established.
-13. `max_temp` - temperature at which to stop reading the IMU, as a safety feature.
+2. `rate` - Frequency to set the IMU reporting data.
+3. `use_delta_angles` - sets whether the IMU reports delta angles (change in angles between readings) or angular rates.
+4. `orientation_covariance` - Array of orientation covariances inserted into each IMU message.
+5. `angular_covariance` - Array of angular covariances inserted into each IMU message.
+6. `linear_covariance` - Array of linear covariances inserted into each IMU message.
+7. `address` - The file to open for reading the IMU.
+8. `tov_address` - File to open for reading the time-of-validity signal. This uses the [serial](http://wiki.ros.org/serial) library to perform the reading.
+9. `baudrate` - Baud rate at which to read the IMU. *NOTE:* This must match the setting on the IMU, or else communication cannot be established.
+10. `max_temp` - temperature at which to stop reading the IMU, as a safety feature.
 
 # Time of Validity
 

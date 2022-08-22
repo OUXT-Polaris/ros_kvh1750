@@ -90,9 +90,17 @@ private:
   double prev_stamp_ = 0;
   int rate_;
   std::string imu_frame_;
+  bool use_delta_angles_;
   rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_;
   rclcpp::Publisher<sensor_msgs::msg::Temperature>::SharedPtr temp_pub_;
-  std::shared_ptr<kvh::MessageProcessorBase> plugin_;
+  sensor_msgs::msg::Imu current_imu_;
+  sensor_msgs::msg::Temperature current_temp_;
+  std::vector<double> ahrs_cov_;
+  std::vector<double> ang_cov_;
+  std::vector<double> lin_cov_;
+  std::shared_ptr<kvh::IOModule> io_module_;
+  std::shared_ptr<kvh::IMU1750> imu_;
+  // std::shared_ptr<kvh::MessageProcessorBase> plugin_;
 };
 }  // namespace ros_kvh1750
 
